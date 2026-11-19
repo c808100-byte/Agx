@@ -1,0 +1,282 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidShopSettings(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.shopName is string && data.shopName.size() >= 1 && data.shopName.size() <= 80 &&
+             data.ownerName is string && data.ownerName.size() <= 80 &&
+             data.phone is string && data.phone.size() <= 30 &&
+             data.currency is string && data.currency.size() >= 1 && data.currency.size() <= 10 &&
+             data.cash0 is number &&
+             data.ownerPin is string && data.ownerPin.size() == 4 && data.ownerPin.matches('^[0-9]{4}$') &&
+             data.permItems is bool &&
+             data.permReports is bool &&
+             data.permDebts is bool &&
+             data.permExpenses is bool &&
+             data.permProfit is bool &&
+             data.permCash is bool &&
+             data.nextInvoiceNumber is int && data.nextInvoiceNumber >= 1 &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidProduct(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+             data.price is number && data.price >= 0 &&
+             data.cost is number && data.cost >= 0 &&
+             data.stock is int && data.stock >= 0 &&
+             (!('minStock' in data) || (data.minStock is int && data.minStock >= 0)) &&
+             (!('barcode' in data) || (data.barcode is string && data.barcode.size() <= 64)) &&
+             data.expiryDate is string && data.expiryDate.size() <= 20 &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomer(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+             data.debt is number &&
+             data.openingDebt is number &&
+             data.sinceMillis is int && data.sinceMillis >= 0 &&
+             data.phone is string && data.phone.size() <= 30 &&
+             data.note is string && data.note.size() <= 300 &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidWorker(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.pin is string && data.pin.size() == 4 && data.pin.matches('^[0-9]{4}$') &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidSale(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.invoiceNumber is int && data.invoiceNumber >= 1 &&
+             data.timestampMillis is int && data.timestampMillis >= 0 &&
+             data.total is number && data.total >= 0 &&
+             data.cost is number && data.cost >= 0 &&
+             data.method is string && data.method in ['cash', 'jawwal', 'bank', 'palpay', 'debt'] &&
+             data.payName is string && data.payName.size() <= 80 &&
+             data.customerId is string && data.customerId.size() <= 128 &&
+             data.customerName is string && data.customerName.size() <= 120 &&
+             data.items is list && data.items.size() <= 200 &&
+             (data.items.size() == 0 || data.items[0] is map) &&
+             data.cashierName is string && data.cashierName.size() <= 100 &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidExpense(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.timestampMillis is int && data.timestampMillis >= 0 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 150 &&
+             data.amount is number && data.amount >= 0 &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidLedgerEvent(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.customerId is string && data.customerId.size() >= 1 && data.customerId.size() <= 128 &&
+             data.type is string && data.type in ['payment', 'debt_add'] &&
+             data.timestampMillis is int && data.timestampMillis >= 0 &&
+             data.amount is number && data.amount >= 0 &&
+             data.note is string && data.note.size() <= 200 &&
+             data.deleted is bool &&
+             data.clientUpdatedAt is int && data.clientUpdatedAt >= 0 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) && isValidId(userId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'shopName', 'ownerName', 'phone', 'currency', 'cash0', 'ownerPin',
+                         'permItems', 'permReports', 'permDebts', 'permExpenses', 'permProfit', 'permCash',
+                         'nextInvoiceNumber', 'clientUpdatedAt', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'shopName', 'ownerName', 'phone', 'currency', 'cash0', 'ownerPin',
+                         'permItems', 'permReports', 'permDebts', 'permExpenses', 'permProfit', 'permCash',
+                         'nextInvoiceNumber', 'clientUpdatedAt', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidShopSettings(incoming());
+
+      allow update: if isOwner(userId) && isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidShopSettings(incoming()) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'shopName', 'ownerName', 'phone', 'currency', 'cash0', 'ownerPin',
+                         'permItems', 'permReports', 'permDebts', 'permExpenses', 'permProfit', 'permCash',
+                         'nextInvoiceNumber', 'clientUpdatedAt', 'updatedAt'
+                       ]);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /products/{productId} {
+        allow get: if isOwner(userId) && isValidId(productId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(productId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'price', 'cost', 'stock', 'expiryDate', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'price', 'cost', 'stock', 'minStock', 'barcode', 'expiryDate', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         isValidProduct(incoming());
+
+        allow update: if isOwner(userId) && isValidId(productId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidProduct(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'price', 'cost', 'stock', 'minStock', 'barcode', 'expiryDate', 'deleted', 'clientUpdatedAt', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(productId);
+      }
+
+      match /customers/{customerId} {
+        allow get: if isOwner(userId) && isValidId(customerId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(customerId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'debt', 'openingDebt', 'sinceMillis', 'phone', 'note', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'debt', 'openingDebt', 'sinceMillis', 'phone', 'note', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         isValidCustomer(incoming());
+
+        allow update: if isOwner(userId) && isValidId(customerId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidCustomer(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'debt', 'openingDebt', 'sinceMillis', 'phone', 'note', 'deleted', 'clientUpdatedAt', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(customerId);
+      }
+
+      match /workers/{workerId} {
+        allow get: if isOwner(userId) && isValidId(workerId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(workerId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'pin', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'pin', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         isValidWorker(incoming());
+
+        allow update: if isOwner(userId) && isValidId(workerId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidWorker(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'pin', 'deleted', 'clientUpdatedAt', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(workerId);
+      }
+
+      match /sales/{saleId} {
+        allow get: if isOwner(userId) && isValidId(saleId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(saleId) &&
+                         incoming().keys().hasAll([
+                           'userId', 'invoiceNumber', 'timestampMillis', 'total', 'cost', 'method',
+                           'payName', 'customerId', 'customerName', 'items', 'cashierName', 'deleted',
+                           'clientUpdatedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'invoiceNumber', 'timestampMillis', 'total', 'cost', 'method',
+                           'payName', 'customerId', 'customerName', 'items', 'cashierName', 'deleted',
+                           'clientUpdatedAt', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidSale(incoming());
+
+        allow update: if isOwner(userId) && isValidId(saleId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidSale(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly([
+                           'invoiceNumber', 'timestampMillis', 'total', 'cost', 'method',
+                           'payName', 'customerId', 'customerName', 'items', 'cashierName', 'deleted',
+                           'clientUpdatedAt', 'updatedAt'
+                         ]);
+
+        allow delete: if isOwner(userId) && isValidId(saleId);
+      }
+
+      match /expenses/{expenseId} {
+        allow get: if isOwner(userId) && isValidId(expenseId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(expenseId) &&
+                         incoming().keys().hasAll(['userId', 'timestampMillis', 'title', 'amount', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'timestampMillis', 'title', 'amount', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         isValidExpense(incoming());
+
+        allow update: if isOwner(userId) && isValidId(expenseId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidExpense(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['timestampMillis', 'title', 'amount', 'deleted', 'clientUpdatedAt', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(expenseId);
+      }
+
+      match /ledgerEvents/{eventId} {
+        allow get: if isOwner(userId) && isValidId(eventId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) && isValidId(eventId) &&
+                         incoming().keys().hasAll(['userId', 'customerId', 'type', 'timestampMillis', 'amount', 'note', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'customerId', 'type', 'timestampMillis', 'amount', 'note', 'deleted', 'clientUpdatedAt', 'createdAt', 'updatedAt']) &&
+                         isValidLedgerEvent(incoming());
+
+        allow update: if isOwner(userId) && isValidId(eventId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidLedgerEvent(incoming()) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['customerId', 'type', 'timestampMillis', 'amount', 'note', 'deleted', 'clientUpdatedAt', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(eventId);
+      }
+    }
+  }
+}

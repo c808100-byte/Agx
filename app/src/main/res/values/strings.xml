@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">كاشيرك الذكي</string>
+    <string name="cd_sync_button">المزامنة السحابية</string>
+    <string name="cd_cashier_fab">كاشير</string>
+    <string name="cd_close">إغلاق</string>
+    <string name="cd_increase_qty">زيادة</string>
+    <string name="cd_decrease_qty">إنقاص</string>
+    <string name="cd_prev_day">اليوم السابق</string>
+    <string name="cd_next_day">اليوم التالي</string>
+    <string name="cd_backspace">مسح</string>
+    <string name="cd_scan_barcode">مسح الباركود</string>
+    <string name="cd_clear_search">مسح البحث</string>
+    <string name="cd_toggle_flash">تشغيل الفلاش</string>
+    <string name="cd_low_stock_alert">تنبيه انخفاض المخزون</string>
+    <string name="stock_alert_channel_name">تنبيهات انخفاض المخزون</string>
+    <string name="stock_alert_channel_desc">إشعارات فورية عند وصول كمية أي منتج إلى الحد الأدنى للمخزون</string>
+</resources>

@@ -1,0 +1,178 @@
+{
+  "entities": {
+    "ShopSettings": {
+      "title": "ShopSettings",
+      "description": "Store configuration, cashier role permissions, and invoice numbering for a user account.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the shop owner." },
+        "shopName": { "type": "string", "description": "Display name of the shop." },
+        "ownerName": { "type": "string", "description": "Owner full name." },
+        "phone": { "type": "string", "description": "Shop contact phone number." },
+        "currency": { "type": "string", "description": "Currency symbol such as ₪." },
+        "cash0": { "type": "number", "description": "Opening cash drawer balance." },
+        "ownerPin": { "type": "string", "description": "4-digit owner PIN." },
+        "permItems": { "type": "boolean", "description": "Cashier inventory permission." },
+        "permReports": { "type": "boolean", "description": "Cashier reports permission." },
+        "permDebts": { "type": "boolean", "description": "Cashier debts permission." },
+        "permExpenses": { "type": "boolean", "description": "Cashier expenses permission." },
+        "permProfit": { "type": "boolean", "description": "Cashier profit visibility." },
+        "permCash": { "type": "boolean", "description": "Cashier cash drawer visibility." },
+        "nextInvoiceNumber": { "type": "integer", "description": "Next sequential invoice number." },
+        "clientUpdatedAt": { "type": "integer", "description": "Client modification epoch milliseconds." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": [
+        "userId", "shopName", "ownerName", "phone", "currency", "cash0", "ownerPin",
+        "permItems", "permReports", "permDebts", "permExpenses", "permProfit", "permCash",
+        "nextInvoiceNumber", "clientUpdatedAt", "createdAt", "updatedAt"
+      ]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product item.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "cost": { "type": "number" },
+        "stock": { "type": "integer" },
+        "minStock": { "type": "integer" },
+        "barcode": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "price", "cost", "stock", "expiryDate", "deleted", "clientUpdatedAt", "createdAt", "updatedAt"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Customer account with debt balance.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "debt": { "type": "number" },
+        "openingDebt": { "type": "number" },
+        "sinceMillis": { "type": "integer" },
+        "phone": { "type": "string" },
+        "note": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "debt", "openingDebt", "sinceMillis", "phone", "note", "deleted", "clientUpdatedAt", "createdAt", "updatedAt"]
+    },
+    "Worker": {
+      "title": "Worker",
+      "description": "Cashier worker with 4-digit PIN.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "pin": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "pin", "deleted", "clientUpdatedAt", "createdAt", "updatedAt"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "POS sale invoice record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "invoiceNumber": { "type": "integer" },
+        "timestampMillis": { "type": "integer" },
+        "total": { "type": "number" },
+        "cost": { "type": "number" },
+        "method": { "type": "string", "enum": ["cash", "jawwal", "bank", "palpay", "debt"] },
+        "payName": { "type": "string" },
+        "customerId": { "type": "string" },
+        "customerName": { "type": "string" },
+        "items": { "type": "array" },
+        "cashierName": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "userId", "invoiceNumber", "timestampMillis", "total", "cost", "method",
+        "payName", "customerId", "customerName", "items", "cashierName", "deleted",
+        "clientUpdatedAt", "createdAt", "updatedAt"
+      ]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Shop expense entry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "timestampMillis": { "type": "integer" },
+        "title": { "type": "string" },
+        "amount": { "type": "number" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "timestampMillis", "title", "amount", "deleted", "clientUpdatedAt", "createdAt", "updatedAt"]
+    },
+    "LedgerEvent": {
+      "title": "LedgerEvent",
+      "description": "Customer debt payment or manual debt addition.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "customerId": { "type": "string" },
+        "type": { "type": "string", "enum": ["payment", "debt_add"] },
+        "timestampMillis": { "type": "integer" },
+        "amount": { "type": "number" },
+        "note": { "type": "string" },
+        "deleted": { "type": "boolean" },
+        "clientUpdatedAt": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "customerId", "type", "timestampMillis", "amount", "note", "deleted", "clientUpdatedAt", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/ShopSettings" },
+      "description": "Per-user shop settings document."
+    },
+    "/users/{userId}/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "User inventory products."
+    },
+    "/users/{userId}/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "User customer accounts and debts."
+    },
+    "/users/{userId}/workers/{workerId}": {
+      "schema": { "$ref": "#/entities/Worker" },
+      "description": "User cashier workers."
+    },
+    "/users/{userId}/sales/{saleId}": {
+      "schema": { "$ref": "#/entities/Sale" },
+      "description": "User POS sales invoices."
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "User shop expenses."
+    },
+    "/users/{userId}/ledgerEvents/{eventId}": {
+      "schema": { "$ref": "#/entities/LedgerEvent" },
+      "description": "User customer ledger payments and debt additions."
+    }
+  }
+}

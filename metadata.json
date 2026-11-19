@@ -1,0 +1,6 @@
+{
+  "name": "كاشيرك الذكي",
+  "description": "تطبيق نقاط البيع والمحاسبة وإدارة الجرد والديون والمصروفات يعمل دون إنترنت مع قاعدة بيانات محلية ومزامنة سحابية عبر حساب جوجل",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
